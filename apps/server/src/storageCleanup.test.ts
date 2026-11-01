@@ -2105,12 +2105,13 @@ describe("storage cleanup reports and local file policies", () => {
     ["unchanged", "removed", "No commits beyond the project branch"],
     ["unmerged", "kept", "Has commits beyond the project branch"],
     ["detached", "kept", "Project branch is unavailable"],
+    ["merged-only", "kept", "No remote is configured for merged-worktree cleanup"],
   ] as const)("cleans archived local-only worktrees: %s", ([state, outcome, reason]) =>
     runCleanupTest(
       Effect.gen(function* () {
         const { service, fs, repo, worktree, command, setThreads } = yield* cleanupFixture({
           ...DEFAULT_SERVER_SETTINGS.storageCleanup,
-          worktreeUnchanged: true,
+          worktreeUnchanged: state !== "merged-only",
           worktreeOnMerge: true,
         });
         yield* command(repo, ["branch", "-m", "main", "trunk"]);
